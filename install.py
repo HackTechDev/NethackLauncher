@@ -47,14 +47,27 @@ def is_lubuntu():
     return "lubuntu" in session.lower() or Path("/usr/share/lubuntu").is_dir()
 
 
+def escape_string(value):
+    """Échappement d'une valeur de type chaîne (spécification Desktop Entry)."""
+    return (value.replace("\\", "\\\\").replace("\n", "\\n")
+            .replace("\t", "\\t").replace("\r", "\\r"))
+
+
+def quote_exec_arg(arg):
+    """Argument de la clé Exec, entre guillemets et échappé selon la spécification."""
+    for char in '\\"`$':
+        arg = arg.replace(char, "\\" + char)
+    return escape_string(f'"{arg}"'.replace("%", "%%"))
+
+
 def desktop_entry():
     """Contenu du .desktop du projet, avec les chemins adaptés à l'emplacement actuel."""
     lines = []
     for line in DESKTOP_SRC.read_text(encoding="utf-8").splitlines():
         if line.startswith("Exec="):
-            line = f"Exec={LAUNCHER}"
+            line = f"Exec={quote_exec_arg(str(LAUNCHER))}"
         elif line.startswith("Path="):
-            line = f"Path={PROJECT_DIR}"
+            line = f"Path={escape_string(str(PROJECT_DIR))}"
         elif line.startswith("Icon="):
             line = f"Icon={APP_ID}"
         lines.append(line)
