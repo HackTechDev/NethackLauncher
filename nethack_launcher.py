@@ -5,6 +5,7 @@
 
 import curses
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -24,6 +25,10 @@ MODES = [
     ("X11", "Interface graphique X11 (tuiles)", ["-wX11"], True),
     ("Qt", "Interface graphique Qt", ["-wQT"], True),
 ]
+
+# Bibliothèque dont dépend chaque interface : si le binaire ne la référence pas,
+# l'interface n'a pas été compilée (tty, toujours présente, n'en a pas besoin)
+PORT_LIBRARIES = {"Curses": b"libncurses", "X11": b"libXaw", "Qt": b"libQt"}
 
 CONFIG_DIR = os.path.join(os.environ.get("XDG_CONFIG_HOME") or os.path.expanduser("~/.config"),
                           "nethack-launcher")
@@ -89,12 +94,52 @@ def save_last_mode(mode):
         pass  # mémoriser le mode est un confort, pas une nécessité
 
 
+def resolve_binary(nethack):
+    """Chemin du vrai binaire : suit le script nethack installé (HACKDIR/HACK)."""
+    try:
+        with open(nethack, "rb") as f:
+            if f.read(2) != b"#!":
+                return nethack
+        with open(nethack, encoding="utf-8", errors="replace") as f:
+            script = f.read()
+    except OSError:
+        return None
+    hackdir = re.search(r"^HACKDIR=(\S+)", script, re.M)
+    hack = re.search(r"^HACK=(\S+)", script, re.M)
+    if not hackdir:
+        return None
+    binary = hack.group(1) if hack else "$HACKDIR/nethack"
+    return binary.replace("$HACKDIR", hackdir.group(1)).replace("${HACKDIR}", hackdir.group(1))
+
+
+def detect_unsupported(nethack):
+    """Libellés des modes absents du binaire ; ensemble vide en cas de doute."""
+    binary = resolve_binary(nethack)
+    try:
+        with open(binary, "rb") as f:
+            data = f.read()
+    except (OSError, TypeError):
+        return set()
+    if not data.startswith(b"\x7fELF") or b".so" not in data:
+        return set()  # binaire statique ou inconnu : impossible de conclure
+    return {label for label, lib in PORT_LIBRARIES.items() if lib not in data}
+
+
+# Modes que le binaire NetHack ne prend pas en charge (rempli au démarrage)
+UNSUPPORTED = set()
+
+
 def has_display():
     return bool(os.environ.get("DISPLAY") or os.environ.get("WAYLAND_DISPLAY"))
 
 
-def available(mode):
-    return not mode[3] or has_display()
+def unavailable_reason(mode):
+    """Raison pour laquelle le mode ne peut pas être lancé, ou None."""
+    if mode[0] in UNSUPPORTED:
+        return "non compilé dans NetHack"
+    if mode[3] and not has_display():
+        return "pas d'affichage graphique"
+    return None
 
 
 def addstr_center(win, y, text, attr=0):
@@ -122,10 +167,9 @@ def draw(stdscr, selected, message, error):
     width = 44
     for i, mode in enumerate(MODES):
         label, desc, _, _ = mode
-        ok = available(mode)
-        text = f" {i + 1}. {label:<9} {desc}"
-        if not ok:
-            text = f" {i + 1}. {label:<9} (pas d'affichage graphique)"
+        reason = unavailable_reason(mode)
+        ok = reason is None
+        text = f" {i + 1}. {label:<9} {desc if ok else f'({reason})'}"
         text = text.ljust(width)[:width]
         if i == selected:
             attr = color(2, curses.A_REVERSE) | curses.A_BOLD
@@ -235,8 +279,9 @@ def main(stdscr, nethack, extra_args):
             if key not in (curses.KEY_ENTER, 10, 13):
                 selected = key - ord("1")
             mode = MODES[selected]
-            if not available(mode):
-                message, error = f"Le mode {mode[0]} nécessite un affichage graphique (DISPLAY).", True
+            reason = unavailable_reason(mode)
+            if reason:
+                message, error = f"Mode {mode[0]} indisponible : {reason}.", True
                 continue
             save_last_mode(mode)
             message, error = run_nethack(stdscr, nethack, mode, extra_args)
@@ -248,6 +293,7 @@ if __name__ == "__main__":
     nethack, error = find_nethack(cli_path)
     if error:
         sys.exit(error)
+    UNSUPPORTED = detect_unsupported(nethack)
     if not sys.stdin.isatty() or shutil.get_terminal_size().columns == 0:
         sys.exit("Ce lanceur doit être exécuté dans un terminal.")
     os.environ.setdefault("ESCDELAY", "25")

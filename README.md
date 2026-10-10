@@ -60,6 +60,12 @@ système, il affiche un avertissement et ne modifie rien.
 Sans affichage graphique (par exemple en SSH sans redirection X), les modes
 X11 et Qt apparaissent grisés et ne peuvent pas être lancés.
 
+Le lanceur détecte aussi les interfaces absentes du binaire NetHack, d'après
+les bibliothèques auxquelles il est lié (`libncurses` pour Curses, `libXaw`
+pour X11, `libQt` pour Qt). Un mode non compilé apparaît grisé avec la mention
+« non compilé dans NetHack ». En cas de doute (binaire statique ou
+introuvable), tous les modes restent proposés.
+
 ## Touches
 
 | Touche          | Action                          |
