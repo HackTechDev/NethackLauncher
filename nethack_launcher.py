@@ -50,6 +50,7 @@ def init_colors():
     curses.init_pair(1, curses.COLOR_YELLOW, background)
     curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_CYAN)
     curses.init_pair(3, curses.COLOR_RED, background)
+    curses.init_pair(4, curses.COLOR_GREEN, background)
     COLORS = True
 
 
@@ -80,7 +81,7 @@ def addstr_center(win, y, text, attr=0):
         win.addnstr(y, x, text, max(0, w - x - 1), attr)
 
 
-def draw(stdscr, selected, message):
+def draw(stdscr, selected, message, error):
     stdscr.erase()
     h, w = stdscr.getmaxyx()
     y = 1
@@ -116,7 +117,8 @@ def draw(stdscr, selected, message):
     addstr_center(stdscr, y, f"↑/↓ : naviguer   Entrée : lancer   1-{len(MODES)} : accès direct   q : quitter",
                   curses.A_DIM)
     if message:
-        addstr_center(stdscr, y + 2, message, color(3) | curses.A_BOLD)
+        attr = color(3) | curses.A_BOLD if error else color(4)
+        addstr_center(stdscr, y + 2, message, attr)
     stdscr.refresh()
 
 
@@ -181,10 +183,10 @@ def run_nethack(stdscr, nethack, mode, extra_args):
         stdscr.clear()
         hide_cursor()
     if rc is None:
-        return f"Erreur : {err}"
+        return f"Erreur : {err}", True
     if rc != 0:
-        return f"NetHack ({label}) s'est terminé avec le code {rc}"
-    return f"Partie en mode {label} terminée."
+        return f"NetHack ({label}) s'est terminé avec le code {rc}", True
+    return f"Partie en mode {label} terminée.", False
 
 
 def main(stdscr, nethack, extra_args):
@@ -193,11 +195,11 @@ def main(stdscr, nethack, extra_args):
     stdscr.keypad(True)
 
     selected = 0
-    message = ""
+    message, error = "", False
     while True:
-        draw(stdscr, selected, message)
+        draw(stdscr, selected, message, error)
         key = stdscr.getch()
-        message = ""
+        message, error = "", False
         if key in (curses.KEY_UP, ord("k")):
             selected = (selected - 1) % len(MODES)
         elif key in (curses.KEY_DOWN, ord("j")):
@@ -211,9 +213,9 @@ def main(stdscr, nethack, extra_args):
                 selected = key - ord("1")
             mode = MODES[selected]
             if not available(mode):
-                message = f"Le mode {mode[0]} nécessite un affichage graphique (DISPLAY)."
+                message, error = f"Le mode {mode[0]} nécessite un affichage graphique (DISPLAY).", True
                 continue
-            message = run_nethack(stdscr, nethack, mode, extra_args)
+            message, error = run_nethack(stdscr, nethack, mode, extra_args)
 
 
 if __name__ == "__main__":
