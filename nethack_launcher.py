@@ -34,6 +34,37 @@ TITLE = [
 ]
 
 
+# Paires de couleurs ; restent à False sur un terminal sans couleurs
+COLORS = False
+
+
+def init_colors():
+    global COLORS
+    if not curses.has_colors():
+        return
+    try:
+        curses.use_default_colors()
+        background = -1
+    except curses.error:
+        background = curses.COLOR_BLACK
+    curses.init_pair(1, curses.COLOR_YELLOW, background)
+    curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_CYAN)
+    curses.init_pair(3, curses.COLOR_RED, background)
+    COLORS = True
+
+
+def color(pair, fallback=curses.A_NORMAL):
+    """Attribut de la paire de couleurs, ou `fallback` en monochrome."""
+    return curses.color_pair(pair) if COLORS else fallback
+
+
+def hide_cursor():
+    try:
+        curses.curs_set(0)
+    except curses.error:
+        pass  # terminal incapable de masquer le curseur (ex. : vt100)
+
+
 def has_display():
     return bool(os.environ.get("DISPLAY") or os.environ.get("WAYLAND_DISPLAY"))
 
@@ -55,10 +86,10 @@ def draw(stdscr, selected, message):
     y = 1
     if h >= len(TITLE) + len(MODES) + 10 and w > 42:
         for line in TITLE:
-            addstr_center(stdscr, y, line, curses.color_pair(1) | curses.A_BOLD)
+            addstr_center(stdscr, y, line, color(1) | curses.A_BOLD)
             y += 1
     else:
-        addstr_center(stdscr, y, "NetHack", curses.color_pair(1) | curses.A_BOLD)
+        addstr_center(stdscr, y, "NetHack", color(1) | curses.A_BOLD)
         y += 1
     y += 1
     addstr_center(stdscr, y, "Choisissez un mode d'affichage", curses.A_BOLD)
@@ -73,7 +104,7 @@ def draw(stdscr, selected, message):
             text = f" {i + 1}. {label:<9} (pas d'affichage graphique)"
         text = text.ljust(width)[:width]
         if i == selected:
-            attr = curses.color_pair(2) | curses.A_BOLD
+            attr = color(2, curses.A_REVERSE) | curses.A_BOLD
         elif not ok:
             attr = curses.A_DIM
         else:
@@ -85,7 +116,7 @@ def draw(stdscr, selected, message):
     addstr_center(stdscr, y, f"↑/↓ : naviguer   Entrée : lancer   1-{len(MODES)} : accès direct   q : quitter",
                   curses.A_DIM)
     if message:
-        addstr_center(stdscr, y + 2, message, curses.color_pair(3) | curses.A_BOLD)
+        addstr_center(stdscr, y + 2, message, color(3) | curses.A_BOLD)
     stdscr.refresh()
 
 
@@ -139,7 +170,7 @@ def run_nethack(stdscr, nethack, mode, extra_args):
     finally:
         curses.reset_prog_mode()
         stdscr.clear()
-        curses.curs_set(0)
+        hide_cursor()
     if rc is None:
         return f"Erreur : {err}"
     if rc != 0:
@@ -148,11 +179,8 @@ def run_nethack(stdscr, nethack, mode, extra_args):
 
 
 def main(stdscr, nethack, extra_args):
-    curses.curs_set(0)
-    curses.use_default_colors()
-    curses.init_pair(1, curses.COLOR_YELLOW, -1)
-    curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_CYAN)
-    curses.init_pair(3, curses.COLOR_RED, -1)
+    hide_cursor()
+    init_colors()
     stdscr.keypad(True)
 
     selected = 0
