@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 Le Sanglier des Ardennes
 """Installe (ou désinstalle) le raccourci et l'icône du lanceur NetHack.
 
 Pour l'instant, seul Lubuntu est pris en charge.

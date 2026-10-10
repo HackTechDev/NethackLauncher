@@ -105,3 +105,11 @@ les raccourcis numériques s'adaptent automatiquement.
 
 L'option `-w` passée par le lanceur est prioritaire sur `windowtype` défini
 dans `~/.nethackrc`.
+
+## Licence
+
+Copyright (C) 2026 Le Sanglier des Ardennes
+
+Ce programme est un logiciel libre distribué sous les termes de la
+[GNU General Public License v3.0](LICENSE) ou (à votre choix) de toute
+version ultérieure. Il est fourni sans aucune garantie.

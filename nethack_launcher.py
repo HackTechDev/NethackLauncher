@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 Le Sanglier des Ardennes
 """Lanceur TUI pour NetHack : choix du mode graphique (Terminal, Curses, X11, Qt)."""
 
 import curses
