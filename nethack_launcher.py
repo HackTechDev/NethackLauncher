@@ -10,6 +10,7 @@ import signal
 import shutil
 import subprocess
 import sys
+from typing import NamedTuple
 
 # Emplacements essayés, dans l'ordre, si ni --nethack ni $NETHACK ne sont fournis
 # (~/nh/install est le préfixe d'installation par défaut des sources de NetHack)
@@ -19,18 +20,23 @@ NETHACK_CANDIDATES = [
     "/usr/games/nethack",
 ]
 
-# (libellé, description, options passées à nethack,
-#  variables d'affichage dont l'une doit être définie ; vide pour un mode texte)
-MODES = [
-    ("Terminal", "Interface texte classique (tty)", ["-wtty"], ()),
-    ("Curses", "Interface texte curses (fenêtres)", ["-wcurses"], ()),
-    ("X11", "Interface graphique X11 (tuiles)", ["-wX11"], ("DISPLAY",)),
-    ("Qt", "Interface graphique Qt", ["-wQT"], ("DISPLAY", "WAYLAND_DISPLAY")),
-]
+class Mode(NamedTuple):
+    label: str
+    description: str
+    args: list
+    # Variables d'affichage dont l'une doit être définie ; vide pour un mode texte
+    displays: tuple = ()
+    # Bibliothèque dont dépend l'interface : si le binaire ne la référence pas,
+    # elle n'a pas été compilée (None : toujours présente, comme tty)
+    library: bytes = None
 
-# Bibliothèque dont dépend chaque interface : si le binaire ne la référence pas,
-# l'interface n'a pas été compilée (tty, toujours présente, n'en a pas besoin)
-PORT_LIBRARIES = {"Curses": b"libncurses", "X11": b"libXaw", "Qt": b"libQt"}
+
+MODES = [
+    Mode("Terminal", "Interface texte classique (tty)", ["-wtty"]),
+    Mode("Curses", "Interface texte curses (fenêtres)", ["-wcurses"], library=b"libncurses"),
+    Mode("X11", "Interface graphique X11 (tuiles)", ["-wX11"], ("DISPLAY",), b"libXaw"),
+    Mode("Qt", "Interface graphique Qt", ["-wQT"], ("DISPLAY", "WAYLAND_DISPLAY"), b"libQt"),
+]
 
 CONFIG_DIR = os.path.join(os.environ.get("XDG_CONFIG_HOME") or os.path.expanduser("~/.config"),
                           "nethack-launcher")
@@ -84,14 +90,14 @@ def load_last_mode():
             label = f.read().strip()
     except OSError:
         return 0
-    return next((i for i, mode in enumerate(MODES) if mode[0] == label), 0)
+    return next((i for i, mode in enumerate(MODES) if mode.label == label), 0)
 
 
 def save_last_mode(mode):
     try:
         os.makedirs(CONFIG_DIR, exist_ok=True)
         with open(LAST_MODE_FILE, "w", encoding="utf-8") as f:
-            f.write(mode[0] + "\n")
+            f.write(mode.label + "\n")
     except OSError:
         pass  # mémoriser le mode est un confort, pas une nécessité
 
@@ -124,7 +130,7 @@ def detect_unsupported(nethack):
         return set()
     if not data.startswith(b"\x7fELF") or b".so" not in data:
         return set()  # binaire statique ou inconnu : impossible de conclure
-    return {label for label, lib in PORT_LIBRARIES.items() if lib not in data}
+    return {mode.label for mode in MODES if mode.library and mode.library not in data}
 
 
 # Modes que le binaire NetHack ne prend pas en charge (rempli au démarrage)
@@ -133,11 +139,10 @@ UNSUPPORTED = set()
 
 def unavailable_reason(mode):
     """Raison pour laquelle le mode ne peut pas être lancé, ou None."""
-    if mode[0] in UNSUPPORTED:
+    if mode.label in UNSUPPORTED:
         return "non compilé dans NetHack"
-    displays = mode[3]
-    if displays and not any(os.environ.get(var) for var in displays):
-        return "pas de serveur X" if displays == ("DISPLAY",) else "pas d'affichage graphique"
+    if mode.displays and not any(os.environ.get(var) for var in mode.displays):
+        return "pas de serveur X" if mode.displays == ("DISPLAY",) else "pas d'affichage graphique"
     return None
 
 
@@ -165,10 +170,9 @@ def draw(stdscr, selected, message, error):
 
     width = 44
     for i, mode in enumerate(MODES):
-        label, desc, _, _ = mode
         reason = unavailable_reason(mode)
         ok = reason is None
-        text = f" {i + 1}. {label:<9} {desc if ok else f'({reason})'}"
+        text = f" {i + 1}. {mode.label:<9} {mode.description if ok else f'({reason})'}"
         text = text.ljust(width)[:width]
         if i == selected:
             attr = color(2, curses.A_REVERSE) | curses.A_BOLD
@@ -208,7 +212,7 @@ def find_nethack(cli_path):
 
 
 def usage():
-    modes = "\n".join(f"  {i + 1}. {m[0]:<9} {m[1]} ({' '.join(m[2])})"
+    modes = "\n".join(f"  {i + 1}. {m.label:<9} {m.description} ({' '.join(m.args)})"
                       for i, m in enumerate(MODES))
     return f"""Usage : {os.path.basename(sys.argv[0])} [--nethack CHEMIN] [OPTIONS NETHACK...]
 
@@ -245,11 +249,11 @@ def split_args(argv):
 
 
 def run_nethack(stdscr, nethack, mode, extra_args):
-    label, _, args, graphical = mode
-    cmd = [nethack, *args, *extra_args]
+    label = mode.label
+    cmd = [nethack, *mode.args, *extra_args]
     curses.def_prog_mode()
     curses.endwin()
-    if graphical:
+    if mode.displays:
         print(f"NetHack ({label}) est lancé dans une fenêtre séparée...")
     err = None
     # Ctrl+C doit aller à NetHack seul : sans cela, le lanceur reçoit aussi
@@ -307,7 +311,7 @@ def main(stdscr, nethack, extra_args):
             mode = MODES[selected]
             reason = unavailable_reason(mode)
             if reason:
-                message, error = f"Mode {mode[0]} indisponible : {reason}.", True
+                message, error = f"Mode {mode.label} indisponible : {reason}.", True
                 continue
             save_last_mode(mode)
             message, error = run_nethack(stdscr, nethack, mode, extra_args)

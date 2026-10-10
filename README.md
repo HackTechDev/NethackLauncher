@@ -111,8 +111,15 @@ suivants.
 
 ### Modes
 
-La liste des modes se trouve en tête de `nethack_launcher.py`, dans `MODES` :
-une liste de tuples `(libellé, description, options, nécessite X)`.
+La liste des modes se trouve en tête de `nethack_launcher.py`, dans `MODES`.
+Chaque mode est un `Mode` avec les champs suivants :
+
+- `label`, `description` : texte affiché dans le menu ;
+- `args` : options passées à NetHack (ex. : `["-wX11"]`) ;
+- `displays` : variables d'affichage dont l'une doit être définie (vide pour
+  un mode texte) ;
+- `library` : bibliothèque servant à détecter si l'interface est compilée
+  (`None` pour ne pas vérifier).
 
 Pour ajouter un mode, il suffit d'ajouter une entrée à `MODES` ; le menu et
 les raccourcis numériques s'adaptent automatiquement.
