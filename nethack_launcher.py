@@ -7,7 +7,13 @@ import shutil
 import subprocess
 import sys
 
-NETHACK = "/home/util01/nh/install/games/nethack"
+# Emplacements essayés, dans l'ordre, si ni --nethack ni $NETHACK ne sont fournis
+# (~/nh/install est le préfixe d'installation par défaut des sources de NetHack)
+NETHACK_CANDIDATES = [
+    shutil.which("nethack"),
+    os.path.expanduser("~/nh/install/games/nethack"),
+    "/usr/games/nethack",
+]
 
 # (libellé, description, options passées à nethack, nécessite un serveur X)
 MODES = [
@@ -81,9 +87,44 @@ def draw(stdscr, selected, message):
     stdscr.refresh()
 
 
-def run_nethack(stdscr, mode, extra_args):
+def is_executable(path):
+    return bool(path) and os.path.isfile(path) and os.access(path, os.X_OK)
+
+
+def find_nethack(cli_path):
+    """Retourne (chemin, erreur) : --nethack, puis $NETHACK, puis les emplacements connus."""
+    for source, path in (("--nethack", cli_path), ("NETHACK", os.environ.get("NETHACK"))):
+        if path:
+            path = os.path.expanduser(path)
+            if is_executable(path):
+                return path, None
+            return None, f"Exécutable NetHack introuvable ({source}) : {path}"
+    for path in NETHACK_CANDIDATES:
+        if is_executable(path):
+            return path, None
+    return None, ("Exécutable NetHack introuvable. Indiquez son chemin avec "
+                  "--nethack CHEMIN ou la variable d'environnement NETHACK.")
+
+
+def split_args(argv):
+    """Sépare l'option --nethack des arguments transmis à nethack."""
+    cli_path, extra = None, []
+    it = iter(argv)
+    for arg in it:
+        if arg == "--nethack":
+            cli_path = next(it, None)
+            if cli_path is None:
+                sys.exit("L'option --nethack attend un chemin.")
+        elif arg.startswith("--nethack="):
+            cli_path = arg.split("=", 1)[1]
+        else:
+            extra.append(arg)
+    return cli_path, extra
+
+
+def run_nethack(stdscr, nethack, mode, extra_args):
     label, _, args, graphical = mode
-    cmd = [NETHACK, *args, *extra_args]
+    cmd = [nethack, *args, *extra_args]
     curses.def_prog_mode()
     curses.endwin()
     if graphical:
@@ -104,7 +145,7 @@ def run_nethack(stdscr, mode, extra_args):
     return f"Partie en mode {label} terminée."
 
 
-def main(stdscr, extra_args):
+def main(stdscr, nethack, extra_args):
     curses.curs_set(0)
     curses.use_default_colors()
     curses.init_pair(1, curses.COLOR_YELLOW, -1)
@@ -133,14 +174,16 @@ def main(stdscr, extra_args):
             if not available(mode):
                 message = f"Le mode {mode[0]} nécessite un affichage graphique (DISPLAY)."
                 continue
-            message = run_nethack(stdscr, mode, extra_args)
+            message = run_nethack(stdscr, nethack, mode, extra_args)
 
 
 if __name__ == "__main__":
-    if not (os.path.isfile(NETHACK) and os.access(NETHACK, os.X_OK)):
-        sys.exit(f"Exécutable NetHack introuvable : {NETHACK}")
+    # Les autres arguments sont transmis à nethack (ex. : -u NomDuJoueur)
+    cli_path, extra_args = split_args(sys.argv[1:])
+    nethack, error = find_nethack(cli_path)
+    if error:
+        sys.exit(error)
     if not sys.stdin.isatty() or shutil.get_terminal_size().columns == 0:
         sys.exit("Ce lanceur doit être exécuté dans un terminal.")
     os.environ.setdefault("ESCDELAY", "25")
-    # Les arguments supplémentaires sont transmis à nethack (ex. : -u NomDuJoueur)
-    curses.wrapper(main, sys.argv[1:])
+    curses.wrapper(main, nethack, extra_args)

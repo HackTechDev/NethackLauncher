@@ -6,7 +6,7 @@ d'affichage avant de lancer le jeu.
 ## Prérequis
 
 - Python 3 (module standard `curses`, aucune dépendance externe)
-- NetHack installé dans `/home/util01/nh/install/games/nethack`
+- NetHack installé (voir [Chemin de NetHack](#chemin-de-nethack))
 - Pour les modes X11 et Qt : une session graphique (`DISPLAY` défini)
 
 ## Utilisation
@@ -75,11 +75,30 @@ terminal reste occupé tant que la fenêtre du jeu est ouverte.
 
 ## Configuration
 
-Le chemin de l'exécutable et la liste des modes se trouvent en tête de
-`nethack_launcher.py` :
+### Chemin de NetHack
 
-- `NETHACK` : chemin du script de lancement de NetHack
-- `MODES` : liste de tuples `(libellé, description, options, nécessite X)`
+Le lanceur cherche l'exécutable `nethack` dans cet ordre :
+
+1. l'option `--nethack CHEMIN` (ou `--nethack=CHEMIN`) ;
+2. la variable d'environnement `NETHACK` ;
+3. la commande `nethack` dans le `PATH` ;
+4. `~/nh/install/games/nethack` (emplacement par défaut d'une compilation
+   depuis les sources) ;
+5. `/usr/games/nethack` (paquet de la distribution).
+
+```bash
+./nethack_launcher.py --nethack /opt/nethack/nethack
+NETHACK=/opt/nethack/nethack ./nethack_launcher.py
+```
+
+Si un chemin donné par `--nethack` ou `NETHACK` n'est pas exécutable, le
+lanceur s'arrête avec un message d'erreur, sans essayer les emplacements
+suivants.
+
+### Modes
+
+La liste des modes se trouve en tête de `nethack_launcher.py`, dans `MODES` :
+une liste de tuples `(libellé, description, options, nécessite X)`.
 
 Pour ajouter un mode, il suffit d'ajouter une entrée à `MODES` ; le menu et
 les raccourcis numériques s'adaptent automatiquement.
