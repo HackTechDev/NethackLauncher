@@ -6,6 +6,7 @@
 import curses
 import os
 import re
+import signal
 import shutil
 import subprocess
 import sys
@@ -251,11 +252,17 @@ def run_nethack(stdscr, nethack, mode, extra_args):
     if graphical:
         print(f"NetHack ({label}) est lancé dans une fenêtre séparée...")
     err = None
+    # Ctrl+C doit aller à NetHack seul : sans cela, le lanceur reçoit aussi
+    # SIGINT et subprocess.call tue le jeu. Un gestionnaire Python (et non
+    # SIG_IGN) est remis à zéro par exec, donc NetHack garde le comportement normal.
+    previous = signal.signal(signal.SIGINT, lambda signum, frame: None)
     try:
         rc = subprocess.call(cmd)
     except OSError as exc:
         rc = None
         err = str(exc)
+    finally:
+        signal.signal(signal.SIGINT, previous)
     try:
         if rc != 0:
             # Laisse le temps de lire les messages de NetHack avant de redessiner le menu
@@ -316,4 +323,7 @@ if __name__ == "__main__":
     if not sys.stdin.isatty() or shutil.get_terminal_size().columns == 0:
         sys.exit("Ce lanceur doit être exécuté dans un terminal.")
     os.environ.setdefault("ESCDELAY", "25")
-    curses.wrapper(main, nethack, extra_args)
+    try:
+        curses.wrapper(main, nethack, extra_args)
+    except KeyboardInterrupt:
+        pass  # Ctrl+C dans le menu : on quitte sans trace d'erreur
