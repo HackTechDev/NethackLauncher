@@ -206,11 +206,32 @@ def find_nethack(cli_path):
                   "--nethack CHEMIN ou la variable d'environnement NETHACK.")
 
 
+def usage():
+    modes = "\n".join(f"  {i + 1}. {m[0]:<9} {m[1]} ({' '.join(m[2])})"
+                      for i, m in enumerate(MODES))
+    return f"""Usage : {os.path.basename(sys.argv[0])} [--nethack CHEMIN] [OPTIONS NETHACK...]
+
+Lanceur en mode terminal pour NetHack : choisissez l'interface dans le menu.
+
+Options :
+  --nethack CHEMIN  exécutable NetHack à utiliser (sinon $NETHACK, le PATH,
+                    ~/nh/install/games/nethack puis /usr/games/nethack)
+  -h, --help        affiche cette aide
+
+Les autres options sont transmises à NetHack (ex. : -u NomDuJoueur).
+
+Modes :
+{modes}"""
+
+
 def split_args(argv):
     """Sépare l'option --nethack des arguments transmis à nethack."""
     cli_path, extra = None, []
     it = iter(argv)
     for arg in it:
+        if arg in ("-h", "--help"):
+            print(usage())
+            sys.exit(0)
         if arg == "--nethack":
             cli_path = next(it, None)
             if cli_path is None:

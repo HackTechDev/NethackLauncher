@@ -15,10 +15,13 @@ d'affichage avant de lancer le jeu.
 ./nethack_launcher.py
 ```
 
-Les arguments supplémentaires sont transmis tels quels à NetHack :
+Les arguments supplémentaires sont transmis tels quels à NetHack, sauf
+`--nethack` (voir [Chemin de NetHack](#chemin-de-nethack)) et `-h`/`--help`,
+qui affiche l'aide du lanceur :
 
 ```bash
 ./nethack_launcher.py -u MonPerso
+./nethack_launcher.py --help
 ```
 
 ## Raccourci dans le menu des applications
