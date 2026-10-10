@@ -37,7 +37,8 @@ Il installe :
 
 - l'icône `nethack-launcher.svg` dans `~/.local/share/icons/hicolor/scalable/apps/` ;
 - le raccourci `nethack-launcher.desktop` dans `~/.local/share/applications/`,
-  avec les chemins `Exec` et `Path` adaptés à l'emplacement actuel du projet.
+  généré depuis le modèle `nethack-launcher.desktop.in` avec les chemins
+  `Exec` et `Path` de l'emplacement actuel du projet.
 
 Le raccourci ouvre le lanceur dans l'émulateur de terminal par défaut du bureau
 (`Terminal=true`). Si le projet est déplacé, relancez simplement `./install.py`.

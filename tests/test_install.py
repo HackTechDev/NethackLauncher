@@ -46,6 +46,8 @@ class DesktopEntryTest(unittest.TestCase):
         self.assertIn("Path=/mes jeux/NetHack Launcher", lines)
         self.assertIn(f"Icon={install.APP_ID}", lines)
         self.assertIn("Terminal=true", lines)
+        self.assertNotIn("@", entry)  # aucun marqueur du modèle ne doit subsister
+        self.assertFalse(any(line.startswith("#") for line in lines))
 
 
 class IsLubuntuTest(unittest.TestCase):

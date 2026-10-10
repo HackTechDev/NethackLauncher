@@ -1,10 +1,11 @@
 [Desktop Entry]
+# Modèle : install.py remplace Exec et Path par les chemins réels du projet
 Type=Application
 Name=NetHack Launcher
 Comment=Lancer NetHack en mode Terminal, Curses, X11 ou Qt
-Exec=/home/util01/APP/NETHACKLAUNCHER/nethack_launcher.py
-Path=/home/util01/APP/NETHACKLAUNCHER
-Icon=/home/util01/APP/NETHACKLAUNCHER/nethack-launcher.svg
+Exec=@LAUNCHER@
+Path=@PROJECT_DIR@
+Icon=nethack-launcher
 Terminal=true
 Categories=Game;RolePlaying;
 Keywords=nethack;roguelike;

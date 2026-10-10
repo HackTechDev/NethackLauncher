@@ -16,7 +16,7 @@ from pathlib import Path
 APP_ID = "nethack-launcher"
 PROJECT_DIR = Path(__file__).resolve().parent
 LAUNCHER = PROJECT_DIR / "nethack_launcher.py"
-DESKTOP_SRC = PROJECT_DIR / f"{APP_ID}.desktop"
+DESKTOP_SRC = PROJECT_DIR / f"{APP_ID}.desktop.in"
 ICON_SRC = PROJECT_DIR / f"{APP_ID}.svg"
 
 DATA_HOME = Path(os.environ.get("XDG_DATA_HOME") or Path.home() / ".local/share")
@@ -61,9 +61,11 @@ def quote_exec_arg(arg):
 
 
 def desktop_entry():
-    """Contenu du .desktop du projet, avec les chemins adaptés à l'emplacement actuel."""
+    """Contenu du raccourci, généré depuis le modèle avec les chemins du projet."""
     lines = []
     for line in DESKTOP_SRC.read_text(encoding="utf-8").splitlines():
+        if line.startswith("#"):
+            continue  # commentaires propres au modèle
         if line.startswith("Exec="):
             line = f"Exec={quote_exec_arg(str(LAUNCHER))}"
         elif line.startswith("Path="):
