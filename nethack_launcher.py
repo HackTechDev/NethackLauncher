@@ -18,12 +18,13 @@ NETHACK_CANDIDATES = [
     "/usr/games/nethack",
 ]
 
-# (libellé, description, options passées à nethack, nécessite un serveur X)
+# (libellé, description, options passées à nethack,
+#  variables d'affichage dont l'une doit être définie ; vide pour un mode texte)
 MODES = [
-    ("Terminal", "Interface texte classique (tty)", ["-wtty"], False),
-    ("Curses", "Interface texte curses (fenêtres)", ["-wcurses"], False),
-    ("X11", "Interface graphique X11 (tuiles)", ["-wX11"], True),
-    ("Qt", "Interface graphique Qt", ["-wQT"], True),
+    ("Terminal", "Interface texte classique (tty)", ["-wtty"], ()),
+    ("Curses", "Interface texte curses (fenêtres)", ["-wcurses"], ()),
+    ("X11", "Interface graphique X11 (tuiles)", ["-wX11"], ("DISPLAY",)),
+    ("Qt", "Interface graphique Qt", ["-wQT"], ("DISPLAY", "WAYLAND_DISPLAY")),
 ]
 
 # Bibliothèque dont dépend chaque interface : si le binaire ne la référence pas,
@@ -129,16 +130,13 @@ def detect_unsupported(nethack):
 UNSUPPORTED = set()
 
 
-def has_display():
-    return bool(os.environ.get("DISPLAY") or os.environ.get("WAYLAND_DISPLAY"))
-
-
 def unavailable_reason(mode):
     """Raison pour laquelle le mode ne peut pas être lancé, ou None."""
     if mode[0] in UNSUPPORTED:
         return "non compilé dans NetHack"
-    if mode[3] and not has_display():
-        return "pas d'affichage graphique"
+    displays = mode[3]
+    if displays and not any(os.environ.get(var) for var in displays):
+        return "pas de serveur X" if displays == ("DISPLAY",) else "pas d'affichage graphique"
     return None
 
 

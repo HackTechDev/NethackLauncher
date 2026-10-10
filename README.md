@@ -54,11 +54,13 @@ système, il affiche un avertissement et ne modifie rien.
 |----|----------|----------------|----------------------------|
 | 1  | Terminal | `-wtty`        | Non                        |
 | 2  | Curses   | `-wcurses`     | Non                        |
-| 3  | X11      | `-wX11`        | Oui                        |
-| 4  | Qt       | `-wQT`         | Oui                        |
+| 3  | X11      | `-wX11`        | Oui (serveur X)            |
+| 4  | Qt       | `-wQT`         | Oui (X11 ou Wayland)       |
 
-Sans affichage graphique (par exemple en SSH sans redirection X), les modes
-X11 et Qt apparaissent grisés et ne peuvent pas être lancés.
+Le mode X11 nécessite un serveur X (`DISPLAY`) ; le mode Qt fonctionne aussi
+sous Wayland (`DISPLAY` ou `WAYLAND_DISPLAY`). Sans affichage adapté (par
+exemple en SSH sans redirection X), ces modes apparaissent grisés et ne peuvent
+pas être lancés.
 
 Le lanceur détecte aussi les interfaces absentes du binaire NetHack, d'après
 les bibliothèques auxquelles il est lié (`libncurses` pour Curses, `libXaw`
