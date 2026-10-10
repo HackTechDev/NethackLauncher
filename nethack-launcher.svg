@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <!-- Fond : terminal sombre -->
+  <rect x="2" y="2" width="60" height="60" rx="10" fill="#1b1d23"/>
+  <!-- Murs de la salle -->
+  <rect x="9" y="11" width="46" height="42" rx="1" fill="none" stroke="#8a8f99" stroke-width="2.5"/>
+  <!-- Porte -->
+  <rect x="45" y="9" width="6" height="5" fill="#c08a3e"/>
+  <!-- Sol -->
+  <g fill="#4a4f59">
+    <circle cx="17" cy="19" r="1.4"/><circle cx="25" cy="19" r="1.4"/><circle cx="39" cy="19" r="1.4"/><circle cx="47" cy="19" r="1.4"/>
+    <circle cx="17" cy="45" r="1.4"/><circle cx="25" cy="45" r="1.4"/><circle cx="39" cy="45" r="1.4"/>
+    <circle cx="17" cy="32" r="1.4"/><circle cx="47" cy="32" r="1.4"/>
+  </g>
+  <!-- Le héros -->
+  <text x="28" y="42" text-anchor="middle" font-family="DejaVu Sans Mono, Liberation Mono, monospace"
+        font-size="30" font-weight="bold" fill="#f2d14b">@</text>
+  <!-- Le chien de compagnie -->
+  <text x="46" y="47" text-anchor="middle" font-family="DejaVu Sans Mono, Liberation Mono, monospace"
+        font-size="13" font-weight="bold" fill="#e8e8e8">d</text>
+</svg>

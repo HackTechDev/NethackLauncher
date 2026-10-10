@@ -31,8 +31,9 @@ install -m 644 nethack-launcher.desktop ~/.local/share/applications/
 ```
 
 Le raccourci ouvre le lanceur dans l'émulateur de terminal par défaut du bureau
-(`Terminal=true`). Les chemins `Exec`, `Path` et `Icon` sont absolus : adaptez-les
-si le projet ou NetHack est déplacé. Pour le désinstaller :
+(`Terminal=true`) et utilise l'icône `nethack-launcher.svg` du projet. Les chemins
+`Exec`, `Path` et `Icon` sont absolus : adaptez-les si le projet est déplacé.
+Pour le désinstaller :
 
 ```bash
 rm ~/.local/share/applications/nethack-launcher.desktop
