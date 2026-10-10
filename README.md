@@ -1,5 +1,7 @@
 # NetHack Launcher
 
+[![CI](https://github.com/HackTechDev/NethackLauncher/actions/workflows/ci.yml/badge.svg)](https://github.com/HackTechDev/NethackLauncher/actions/workflows/ci.yml)
+
 Lanceur en mode terminal (TUI) pour NetHack, permettant de choisir l'interface
 d'affichage avant de lancer le jeu.
 
