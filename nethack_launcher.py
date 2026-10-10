@@ -162,11 +162,20 @@ def run_nethack(stdscr, nethack, mode, extra_args):
     curses.endwin()
     if graphical:
         print(f"NetHack ({label}) est lancé dans une fenêtre séparée...")
+    err = None
     try:
         rc = subprocess.call(cmd)
     except OSError as exc:
         rc = None
         err = str(exc)
+    try:
+        if rc != 0:
+            # Laisse le temps de lire les messages de NetHack avant de redessiner le menu
+            print(f"\nNetHack ({label}) a échoué : {err or f'code de sortie {rc}'}")
+            try:
+                input("Appuyez sur Entrée pour revenir au menu...")
+            except EOFError:
+                pass
     finally:
         curses.reset_prog_mode()
         stdscr.clear()
