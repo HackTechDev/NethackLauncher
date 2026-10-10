@@ -73,6 +73,9 @@ X11 et Qt apparaissent grisés et ne peuvent pas être lancés.
 s'est terminé normalement ou avec un code d'erreur. En modes X11 et Qt, le
 terminal reste occupé tant que la fenêtre du jeu est ouverte.
 
+Le dernier mode lancé est mémorisé dans
+`~/.config/nethack-launcher/last_mode` et présélectionné au prochain démarrage.
+
 ## Configuration
 
 ### Chemin de NetHack

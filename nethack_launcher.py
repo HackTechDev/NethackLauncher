@@ -25,6 +25,10 @@ MODES = [
     ("Qt", "Interface graphique Qt", ["-wQT"], True),
 ]
 
+CONFIG_DIR = os.path.join(os.environ.get("XDG_CONFIG_HOME") or os.path.expanduser("~/.config"),
+                          "nethack-launcher")
+LAST_MODE_FILE = os.path.join(CONFIG_DIR, "last_mode")
+
 TITLE = [
     r" _   _      _   _   _            _    ",
     r"| \ | | ___| |_| | | | __ _  ___| | __",
@@ -64,6 +68,25 @@ def hide_cursor():
         curses.curs_set(0)
     except curses.error:
         pass  # terminal incapable de masquer le curseur (ex. : vt100)
+
+
+def load_last_mode():
+    """Index du dernier mode lancé, ou 0 s'il est inconnu."""
+    try:
+        with open(LAST_MODE_FILE, encoding="utf-8") as f:
+            label = f.read().strip()
+    except OSError:
+        return 0
+    return next((i for i, mode in enumerate(MODES) if mode[0] == label), 0)
+
+
+def save_last_mode(mode):
+    try:
+        os.makedirs(CONFIG_DIR, exist_ok=True)
+        with open(LAST_MODE_FILE, "w", encoding="utf-8") as f:
+            f.write(mode[0] + "\n")
+    except OSError:
+        pass  # mémoriser le mode est un confort, pas une nécessité
 
 
 def has_display():
@@ -194,7 +217,7 @@ def main(stdscr, nethack, extra_args):
     init_colors()
     stdscr.keypad(True)
 
-    selected = 0
+    selected = load_last_mode()
     message, error = "", False
     while True:
         draw(stdscr, selected, message, error)
@@ -215,6 +238,7 @@ def main(stdscr, nethack, extra_args):
             if not available(mode):
                 message, error = f"Le mode {mode[0]} nécessite un affichage graphique (DISPLAY).", True
                 continue
+            save_last_mode(mode)
             message, error = run_nethack(stdscr, nethack, mode, extra_args)
 
 
