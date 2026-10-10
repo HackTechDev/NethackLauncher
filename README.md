@@ -23,21 +23,30 @@ Les arguments supplémentaires sont transmis tels quels à NetHack :
 
 ## Raccourci dans le menu des applications
 
-Le fichier `nethack-launcher.desktop` ajoute une entrée **NetHack Launcher**
-dans la catégorie **Jeux** du menu. Pour l'installer :
+Le script `install.py` ajoute une entrée **NetHack Launcher**, avec son icône,
+dans la catégorie **Jeux** du menu :
 
 ```bash
-install -m 644 nethack-launcher.desktop ~/.local/share/applications/
+./install.py
 ```
+
+Il installe :
+
+- l'icône `nethack-launcher.svg` dans `~/.local/share/icons/hicolor/scalable/apps/` ;
+- le raccourci `nethack-launcher.desktop` dans `~/.local/share/applications/`,
+  avec les chemins `Exec` et `Path` adaptés à l'emplacement actuel du projet.
 
 Le raccourci ouvre le lanceur dans l'émulateur de terminal par défaut du bureau
-(`Terminal=true`) et utilise l'icône `nethack-launcher.svg` du projet. Les chemins
-`Exec`, `Path` et `Icon` sont absolus : adaptez-les si le projet est déplacé.
-Pour le désinstaller :
+(`Terminal=true`). Si le projet est déplacé, relancez simplement `./install.py`.
+
+Pour désinstaller le raccourci et l'icône :
 
 ```bash
-rm ~/.local/share/applications/nethack-launcher.desktop
+./install.py --uninstall
 ```
+
+Pour l'instant, le script ne fonctionne que sous **Lubuntu** : sur un autre
+système, il affiche un avertissement et ne modifie rien.
 
 ## Modes disponibles
 
