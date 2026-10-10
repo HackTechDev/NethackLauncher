@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=NetHack Launcher
+Comment=Lancer NetHack en mode Terminal, Curses, X11 ou Qt
+Exec=/home/util01/APP/NETHACKLAUNCHER/nethack_launcher.py
+Path=/home/util01/APP/NETHACKLAUNCHER
+Icon=/home/util01/nh/install/games/lib/nethackdir/nhsplash.xpm
+Terminal=true
+Categories=Game;RolePlaying;
+Keywords=nethack;roguelike;

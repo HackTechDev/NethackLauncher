@@ -21,6 +21,23 @@ Les arguments supplémentaires sont transmis tels quels à NetHack :
 ./nethack_launcher.py -u MonPerso
 ```
 
+## Raccourci dans le menu des applications
+
+Le fichier `nethack-launcher.desktop` ajoute une entrée **NetHack Launcher**
+dans la catégorie **Jeux** du menu. Pour l'installer :
+
+```bash
+install -m 644 nethack-launcher.desktop ~/.local/share/applications/
+```
+
+Le raccourci ouvre le lanceur dans l'émulateur de terminal par défaut du bureau
+(`Terminal=true`). Les chemins `Exec`, `Path` et `Icon` sont absolus : adaptez-les
+si le projet ou NetHack est déplacé. Pour le désinstaller :
+
+```bash
+rm ~/.local/share/applications/nethack-launcher.desktop
+```
+
 ## Modes disponibles
 
 | N° | Mode     | Option nethack | Affichage graphique requis |
