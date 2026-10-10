@@ -127,6 +127,24 @@ les raccourcis numériques s'adaptent automatiquement.
 L'option `-w` passée par le lanceur est prioritaire sur `windowtype` défini
 dans `~/.nethackrc`.
 
+## Développement
+
+Les tests utilisent uniquement la bibliothèque standard :
+
+```bash
+python3 -m unittest -v
+```
+
+Le style est vérifié par [Ruff](https://docs.astral.sh/ruff/) (configuration
+dans `ruff.toml`) :
+
+```bash
+ruff check .
+```
+
+Les deux sont lancés automatiquement par GitHub Actions à chaque push et pull
+request (`.github/workflows/ci.yml`), avec Python 3.10, 3.12 et 3.14.
+
 ## Licence
 
 Copyright (C) 2026 Le Sanglier des Ardennes

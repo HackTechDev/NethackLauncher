@@ -113,7 +113,8 @@ def uninstall():
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Installe le raccourci et l'icône du lanceur NetHack.")
+    parser = argparse.ArgumentParser(
+        description="Installe le raccourci et l'icône du lanceur NetHack.")
     parser.add_argument("-u", "--uninstall", action="store_true",
                         help="supprime le raccourci et l'icône")
     args = parser.parse_args()

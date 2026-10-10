@@ -6,8 +6,8 @@
 import curses
 import os
 import re
-import signal
 import shutil
+import signal
 import subprocess
 import sys
 from typing import NamedTuple
@@ -184,8 +184,8 @@ def draw(stdscr, selected, message, error):
         y += 1
 
     y += 1
-    addstr_center(stdscr, y, f"↑/↓ : naviguer   Entrée : lancer   1-{len(MODES)} : accès direct   q : quitter",
-                  curses.A_DIM)
+    keys = f"↑/↓ : naviguer   Entrée : lancer   1-{len(MODES)} : accès direct   q : quitter"
+    addstr_center(stdscr, y, keys, curses.A_DIM)
     if message:
         attr = color(3) | curses.A_BOLD if error else color(4)
         addstr_center(stdscr, y + 2, message, attr)
